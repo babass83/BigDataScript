@@ -240,7 +240,7 @@ public class BdsMesosExecutor implements Executor, NotifyTaskState, PidParser {
 	@Override
 	public void taskFinished(Task task, ca.mcgill.mcb.pcingola.bigDataScript.task.TaskState taskState) {
 		String tid = task.getId();
-		if (debug) Gpr.debug("Task " + tid + " finished");
+		if (debug) Gpr.debug("Task " + tid + " finished with exitcode " + task.getExitValue());
 
 		CmdInfo cmdInfo = cmdInfoById.get(tid);
 		if (cmdInfo == null) {
@@ -248,8 +248,18 @@ public class BdsMesosExecutor implements Executor, NotifyTaskState, PidParser {
 			return;
 		}
 
-		// Change Mesos task status to FINISHED
-		changeTaskState(cmdInfo.executorDriver, cmdInfo.taskInfo, TaskState.TASK_FINISHED);
+		// Update mesos task state
+		switch (task.getExitValue()) {
+			case Task.EXITCODE_OK: {
+				changeTaskState(cmdInfo.executorDriver, cmdInfo.taskInfo, TaskState.TASK_FINISHED);
+			} break;
+			case Task.EXITCODE_KILLED: {
+				changeTaskState(cmdInfo.executorDriver, cmdInfo.taskInfo, TaskState.TASK_KILLED);
+			} break;
+			default: {
+				changeTaskState(cmdInfo.executorDriver, cmdInfo.taskInfo, TaskState.TASK_FAILED);
+			} break;
+		}
 
 		// Clean up
 		cmdInfoById.remove(tid);
