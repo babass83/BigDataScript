@@ -220,6 +220,7 @@ public class BdsMesosScheduler implements Scheduler {
 
 		// Select offers and add taskInfo
 		HostResources tr = new HostResources(task.getResources());
+
 		for (Offer offer : offers) {
 			// Consume resources until offers fulfill task requirements
 			HostResources or = parseOffer(offer);
@@ -500,7 +501,8 @@ public class BdsMesosScheduler implements Scheduler {
 		int numCpus = task.getResources().getCpus() > 0 ? task.getResources().getCpus() : 1;
 		Resource cpus = Resource.newBuilder().setName(OFFER_CPUS).setType(Value.Type.SCALAR).setScalar(Value.Scalar.newBuilder().setValue(numCpus)).build(); // Number of CPUS
 
-		long memSize = (task.getResources().getMem() / MB) > 0 ? (task.getResources().getMem() / MB) : 64;
+		long taskMem = (task.getResources().getMem() + MB - 1) / MB;
+		long memSize = taskMem > 0 ? taskMem : 64;
 		Resource mem = Resource.newBuilder().setName(OFFER_MEM).setType(Value.Type.SCALAR).setScalar(Value.Scalar.newBuilder().setValue(memSize)).build(); // Memory in MB
 
 		// Executor
