@@ -207,7 +207,8 @@ public class BdsMesosScheduler implements Scheduler {
 		// Not enough resources in this host?
 		if (!host.hasResourcesAvailable(task.getResources())) return false;
 
-		if (verbose) Gpr.debug("Matching task: " + task.getId() + "\t resources: " + task.getResources() + "\thost:" + host.getHostName() + ", resources: " + host.getResourcesAvaialble());
+		if (verbose) Gpr.debug("Matching task: " + task.getId() + "\t resources: " + task.getResources() + "\thost:" +
+				host.getHostName() + ", resources: " + host.getResourcesAvaialble());
 
 		// OK, we should be able to run 'task' in hostName
 		String hostName = host.toString();
@@ -227,7 +228,8 @@ public class BdsMesosScheduler implements Scheduler {
 			tr.consume(or);
 
 			// Add offer and taskInfo to collections
-			offerIds.add(offer.getId());
+			if (!offerIds.contains(offer.getId()))
+				offerIds.add(offer.getId());
 			TaskInfo taskInfo = taskInfo(offer, task);
 			taskInfos.add(taskInfo);
 
@@ -390,7 +392,7 @@ public class BdsMesosScheduler implements Scheduler {
 			} else {
 				// Try to match as many tasks as possible in this host
 				for (Task task : taskToLaunch) {
-					if (verbose) Gpr.debug("Trying to launch task " + task.getId());
+					//if (verbose) Gpr.debug("Trying to launch task " + task.getId());
 					if (matchTask(task, host, offerIds, taskInfos)) {
 						host.add(task); // Account used resources
 						assignedTasks.add(task); // Task was assigned
