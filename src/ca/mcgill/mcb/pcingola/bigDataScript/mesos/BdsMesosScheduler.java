@@ -139,6 +139,7 @@ public class BdsMesosScheduler implements Scheduler {
 		// Decline all
 		for (Offer offer : offers) {
 			if (verbose) Gpr.debug("Declining offer: " + offer.getId());
+			remove(offer.getId().getValue());
 			driver.declineOffer(offer.getId());
 		}
 
@@ -431,7 +432,7 @@ public class BdsMesosScheduler implements Scheduler {
 		}
 
 		// No more task to launch? => decline all remaining offers
-		if (taskToLaunch.isEmpty()) declineAllOffers(driver);
+		/*if (taskToLaunch.isEmpty())*/ declineAllOffers(driver);
 	}
 
 	/**
