@@ -934,14 +934,19 @@ public class BdsThread extends Thread implements BdsSerialize {
 
 			// Create HTML report?
 			if (config.isReportHtml()) {
-				Report report = new Report(this, false);
+				Report report = new Report(this, false, false);
 				report.createReport();
+				/* Create a condensed report of only failed tasks */
+				Report reportFailed = new Report(this, false, true);
+				reportFailed.createReport();
 			}
 
 			// Create YAML report?
 			if (config.isReportYaml()) {
-				Report report = new Report(this, true);
+				Report report = new Report(this, true, false);
 				report.createReport();
+				Report reportFailed = new Report(this, true, true);
+				reportFailed.createReport();
 			}
 		}
 

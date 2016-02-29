@@ -175,7 +175,7 @@ public class BdsMesosExecutor implements Executor, NotifyTaskState, PidParser {
 			String cmdArgs[] = BdsMesosFramework.unpackArray(packedCmd);
 
 			if (debug) {
-				System.out.println("Executning command:");
+				System.out.println("Executing command:");
 				for (int i = 0; i < cmdArgs.length; i++)
 					System.out.println("\targs[" + i + "]:\t'" + cmdArgs[i] + "'");
 			}

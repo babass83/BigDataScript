@@ -33,6 +33,7 @@ public class Report {
 	public static final String DATE_FORMAT_CSV = "yyyy,MM,dd,HH,mm,ss";
 	public static final String DATE_FORMAT_HTML = "yyyy-MM-dd HH:mm:ss";
 	public static String REPORT_TEMPLATE = "SummaryTemplate.html";
+	public static String REPORT_TEMPLATE_FAILED = "SummaryTemplateFailed.html";
 	public static String REPORT_TEMPLATE_YAML = "SummaryTemplate.yaml";
 	public static String DAG_TEMPLATE = "DagTaskTemplate.js";
 	public static final String REPORT_RED_COLOR = "style=\"background-color: #ffc0c0\"";
@@ -45,6 +46,7 @@ public class Report {
 	protected static Timer timerReport = new Timer(); // added by Jin Lee (for prog report timer)
 
 	boolean yaml;
+	boolean onlyFailed;
 	boolean verbose;
 	boolean debug;
 	BdsThread bdsThread;
@@ -64,16 +66,17 @@ public class Report {
 		}
 
 		if (doReport) {
-			Report report = new Report(BdsThreads.getInstance().get().getRoot(), false);
+			Report report = new Report(BdsThreads.getInstance().get().getRoot(), false, false);
 			report.createReport();
 		}
 	}
 
-	public Report(BdsThread bdsThread, boolean yaml) {
+	public Report(BdsThread bdsThread, boolean yaml, boolean onlyFailed) {
 		if (!bdsThread.isRoot()) throw new RuntimeException("Cannot create report from non-root bdsThread");
 
 		this.bdsThread = bdsThread;
 		this.yaml = yaml;
+		this.onlyFailed = onlyFailed;
 		verbose = Config.get().isVerbose();
 		debug = Config.get().isDebug();
 	}
@@ -96,14 +99,14 @@ public class Report {
 		if (reportBaseName == null) reportBaseName = bdsThread.getBdsThreadId();
 
 		// Create report file names
-		String outFile = reportBaseName + ".report." + (yaml ? "yaml" : "html");
+		String outFile = reportBaseName + ".report." + (onlyFailed ? "failed." : "") + (yaml ? "yaml" : "html");
 		String dagJsFile = reportBaseName + ".dag.js";
 		if (verbose) Timer.showStdErr("Writing report file '" + outFile + "'");
 
 		SimpleDateFormat outFormat = new SimpleDateFormat(DATE_FORMAT_HTML);
 
 		// Create a template
-		RTemplate rTemplate = new RTemplate(Bds.class, (yaml ? REPORT_TEMPLATE_YAML : REPORT_TEMPLATE), outFile);
+		RTemplate rTemplate = new RTemplate(Bds.class, (yaml ? REPORT_TEMPLATE_YAML : onlyFailed ? REPORT_TEMPLATE_FAILED : REPORT_TEMPLATE), outFile);
 
 		//---
 		// Add summary table values
@@ -134,7 +137,8 @@ public class Report {
 		int taskNum = 1;
 		TaskDependecies taskDepsRoot = TaskDependecies.get();
 		for (Task task : taskDepsRoot.getTasks()) {
-			createReport(rTemplate, task, taskNum++, yaml);
+			if (!onlyFailed || (onlyFailed && task.isDone() && !task.isDoneOk()))
+				createReport(rTemplate, task, taskNum++, yaml);
 		}
 
 		// Number of tasks executed
@@ -143,33 +147,38 @@ public class Report {
 		rTemplate.add("taskFailedNames", taskDepsRoot.taskFailedNames(MAX_TASK_FAILED_NAMES, "\n"));
 
 		// Timeline height
-		int timelineHeight = REPORT_TIMELINE_HEIGHT * (1 + taskNum);
-		rTemplate.add("timelineHeight", timelineHeight);
+		if (!onlyFailed) {
+			int timelineHeight = REPORT_TIMELINE_HEIGHT * (1 + taskNum);
+			rTemplate.add("timelineHeight", timelineHeight);
+		}
 
 		//---
 		// Show Scope
 		//---
 		Scope scope = bdsThread.getScope();
-		rTemplate.add("scope.VAR_ARGS_LIST", scope.getSymbol(Scope.GLOBAL_VAR_ARGS_LIST).getValue());
 		rTemplate.add("scope.TASK_OPTION_SYSTEM", scope.getSymbol(ExpressionTask.TASK_OPTION_SYSTEM).getValue());
 		rTemplate.add("scope.TASK_OPTION_CPUS", scope.getSymbol(ExpressionTask.TASK_OPTION_CPUS).getValue());
 
-		// Scope symbols
-		ArrayList<ScopeSymbol> ssyms = new ArrayList<ScopeSymbol>();
-		ssyms.addAll(scope.getSymbols());
-		Collections.sort(ssyms);
+		if (!onlyFailed) {
+			rTemplate.add("scope.VAR_ARGS_LIST", scope.getSymbol(Scope.GLOBAL_VAR_ARGS_LIST).getValue());
 
-		if (!ssyms.isEmpty()) {
-			for (ScopeSymbol ss : ssyms)
-				if (!ss.getType().isFunction()) {
-					rTemplate.add("symType", ss.getType());
-					rTemplate.add("symName", ss.getName());
-					rTemplate.add("symValue", GprString.escape(ss.getValue().toString()));
-				}
-		} else {
-			rTemplate.add("symType", "");
-			rTemplate.add("symName", "");
-			rTemplate.add("symValue", "");
+			// Scope symbols
+			ArrayList<ScopeSymbol> ssyms = new ArrayList<ScopeSymbol>();
+			ssyms.addAll(scope.getSymbols());
+			Collections.sort(ssyms);
+
+			if (!ssyms.isEmpty()) {
+				for (ScopeSymbol ss : ssyms)
+					if (!ss.getType().isFunction()) {
+						rTemplate.add("symType", ss.getType());
+						rTemplate.add("symName", ss.getName());
+						rTemplate.add("symValue", GprString.escape(ss.getValue().toString()));
+					}
+			} else {
+				rTemplate.add("symType", "");
+				rTemplate.add("symName", "");
+				rTemplate.add("symValue", "");
+			}
 		}
 
 		// Create output file
@@ -212,7 +221,8 @@ public class Report {
 		//---
 		StringBuilder sb = new StringBuilder();
 		for (Task t : bdsThread.getTasks())
-			sb.append(t.getId() + "\n");
+			if (!onlyFailed || (onlyFailed && t.isDone() && !t.isDoneOk()))
+				sb.append(t.getId() + "\n");
 		rTemplate.add("threadTasks", sb.toString());
 
 		// Recurse to child threads
