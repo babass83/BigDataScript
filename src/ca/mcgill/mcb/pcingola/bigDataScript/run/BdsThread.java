@@ -945,8 +945,6 @@ public class BdsThread extends Thread implements BdsSerialize {
 			if (config.isReportYaml()) {
 				Report report = new Report(this, true, false);
 				report.createReport();
-				Report reportFailed = new Report(this, true, true);
-				reportFailed.createReport();
 			}
 		}
 

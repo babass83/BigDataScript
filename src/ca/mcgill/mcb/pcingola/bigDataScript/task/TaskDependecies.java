@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.mcgill.mcb.pcingola.bigDataScript.Config;
 import ca.mcgill.mcb.pcingola.bigDataScript.data.Data;
 import ca.mcgill.mcb.pcingola.bigDataScript.lang.ExpressionTask;
 import ca.mcgill.mcb.pcingola.bigDataScript.report.Report;
@@ -477,7 +478,7 @@ public class TaskDependecies {
 		// If task failed, show task information and failure reason.
 		if (!ok) {
 			// Show error and mark all files to be deleted on exit
-			System.err.println("Task failed:\n" + task.toString(true));
+			if (!Config.get().isQuiet()) System.err.println("Task failed:\n" + task.toString(true));
 			task.deleteOutputFilesOnExit();
 		}
 

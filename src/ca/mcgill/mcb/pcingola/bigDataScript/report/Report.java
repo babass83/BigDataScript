@@ -115,6 +115,9 @@ public class Report {
 		Timer timer = bdsThread.getTimer();
 		rTemplate.add("fileName", statement.getFileName());
 		rTemplate.add("progName", Gpr.baseName(statement.getFileName()));
+		rTemplate.add("userName", System.getProperty("user.name"));
+		rTemplate.add("branch", System.getenv("BRANCH"));
+		rTemplate.add("changeset", System.getenv("CHANGESET"));
 		rTemplate.add("threadIdRoot", bdsThreadId);
 		rTemplate.add("runTime", (timer != null ? timer.toString() : ""));
 		rTemplate.add("startTime", (timer != null ? outFormat.format(timer.getStart()) : ""));
