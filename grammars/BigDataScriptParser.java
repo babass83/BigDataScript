@@ -1,5 +1,5 @@
 // Generated from BigDataScript.g4 by ANTLR 4.2.2
-package ca.mcgill.mcb.pcingola.bigDataScript.antlr;
+package org.bigDataScript.antlr;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
