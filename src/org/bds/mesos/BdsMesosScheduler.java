@@ -66,7 +66,7 @@ public class BdsMesosScheduler implements Scheduler {
 	public static final String OFFER_MEM = "mem";
 
 	private final ExecutorInfo executor;
-	protected boolean verbose = false;
+	protected boolean verbose = true;
 	protected Cluster cluster;
 	protected HashMap<String, Task> taskById;
 	protected ExecutionerMesos executionerMesos;
@@ -120,8 +120,10 @@ public class BdsMesosScheduler implements Scheduler {
 	/**
 	 * Add a task to be launched
 	 */
-	public synchronized void add(Task task) {
-		taskToLaunch.add(task);
+	public void add(Task task) {
+		synchronized (taskToLaunch) {
+			taskToLaunch.add(task);
+		}
 	}
 
 	/**
@@ -391,7 +393,11 @@ public class BdsMesosScheduler implements Scheduler {
 				// Skip master node
 			} else {
 				// Try to match as many tasks as possible in this host
-				for (Task task : taskToLaunch) {
+				Set<Task> newHash;
+				synchronized (taskToLaunch) {
+					newHash = new HashSet<>(taskToLaunch);
+				}
+				for (Task task : newHash) {
 					//if (verbose) Gpr.debug("Trying to launch task " + task.getId());
 					if (matchTask(task, host, offerIds, taskInfos)) {
 						host.add(task); // Account used resources
