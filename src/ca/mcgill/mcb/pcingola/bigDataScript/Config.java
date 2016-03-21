@@ -25,7 +25,7 @@ import ca.mcgill.mcb.pcingola.bigDataScript.util.Timer;
  */
 public class Config {
 
-	public static final String DEFAULT_CONFIG_DIR = Gpr.HOME + "/.bds";
+	public static final String DEFAULT_CONFIG_DIR = "/usr/local/bds" /*Gpr.HOME + "/.bds"*/ ;
 	public static final String DEFAULT_CONFIG_FILE = DEFAULT_CONFIG_DIR + "/bds.config";
 	public static final String DEFAULT_INCLUDE_DIR = DEFAULT_CONFIG_DIR + "/include";
 
