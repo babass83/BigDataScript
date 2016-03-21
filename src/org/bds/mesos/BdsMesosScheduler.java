@@ -66,7 +66,7 @@ public class BdsMesosScheduler implements Scheduler {
 	public static final String OFFER_MEM = "mem";
 
 	private final ExecutorInfo executor;
-	protected boolean verbose = true;
+	protected boolean verbose = false;
 	protected Cluster cluster;
 	protected HashMap<String, Task> taskById;
 	protected ExecutionerMesos executionerMesos;
