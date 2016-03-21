@@ -144,6 +144,15 @@ public class Report {
 				createReport(rTemplate, task, taskNum++, yaml);
 		}
 
+		if (onlyFailed && (taskNum == 1)) {
+			/* No failed task. Create a fake task.
+			 * TODO: Need to find a way to skip task status when no failed task to report
+			 */
+			Task task = new Task();
+			task.setExitValue(0);
+			createReport(rTemplate, task, taskNum, yaml);
+		}
+
 		// Number of tasks executed
 		rTemplate.add("taskCount", taskDepsRoot.size());
 		rTemplate.add("taskFailed", taskDepsRoot.countTaskFailed());
