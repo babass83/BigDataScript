@@ -81,5 +81,5 @@ fi
 #---
 exec java -cp $PROTOBUF_JAR:$MESOS_JAR:$BDS_JAR \
   -Djava.library.path=$MESOS_NATIVE_LIB_DIR \
-  ca.mcgill.mcb.pcingola.bigDataScript.mesos.BdsMesosExecutor "${@}"
+  org.bds.mesos.BdsMesosExecutor "${@}"
 
