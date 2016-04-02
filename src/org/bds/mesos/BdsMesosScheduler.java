@@ -20,6 +20,7 @@ package org.bds.mesos;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -79,7 +80,7 @@ public class BdsMesosScheduler implements Scheduler {
 		this.executor = executor;
 		cluster = executionerMesos.getCluster();
 		taskById = new HashMap<String, Task>();
-		taskToLaunch = new HashSet<>();
+		taskToLaunch = Collections.synchronizedSet(new HashSet<Task>());
 		offersByHost = new HashMap<>();
 		offersById = new HashMap<>();
 	}
@@ -121,9 +122,7 @@ public class BdsMesosScheduler implements Scheduler {
 	 * Add a task to be launched
 	 */
 	public void add(Task task) {
-		synchronized (taskToLaunch) {
-			taskToLaunch.add(task);
-		}
+		taskToLaunch.add(task);
 	}
 
 	/**
@@ -393,11 +392,7 @@ public class BdsMesosScheduler implements Scheduler {
 				// Skip master node
 			} else {
 				// Try to match as many tasks as possible in this host
-				Set<Task> newHash;
-				synchronized (taskToLaunch) {
-					newHash = new HashSet<>(taskToLaunch);
-				}
-				for (Task task : newHash) {
+				for (Task task : taskToLaunch) {
 					//if (verbose) Gpr.debug("Trying to launch task " + task.getId());
 					if (matchTask(task, host, offerIds, taskInfos)) {
 						host.add(task); // Account used resources
