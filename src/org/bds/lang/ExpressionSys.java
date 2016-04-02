@@ -34,7 +34,7 @@ public class ExpressionSys extends Expression {
 
 		sys.lineNum = lineNum;
 		sys.charPosInLine = charPosInLine;
-		sys.setCommands(commands);
+		sys.setCommand(commands);
 
 		return sys;
 	}
@@ -162,6 +162,10 @@ public class ExpressionSys extends Expression {
 	@Override
 	public void serializeParse(BdsSerializer serializer) {
 		super.serializeParse(serializer);
+	}
+	
+	void setCommand(String cmd) {
+		commands = cmd.trim();
 	}
 
 	void setCommands(String cmd) {
