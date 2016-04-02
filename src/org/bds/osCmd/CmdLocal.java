@@ -139,7 +139,6 @@ public class CmdLocal extends Cmd {
 		} else {
 			for (String arg : ExecutionerLocal.LOCAL_KILL_COMMAND)
 				args.add(arg);
-			args.add("" + pid);
 		}
 
 		// Add tasks's pid
@@ -148,11 +147,12 @@ public class CmdLocal extends Cmd {
 
 		// Execute kill command
 		try {
+			if (debug) log("Executing kill command " + args.toString());
 			// Execute 'bds kill pid'
 			Process proc = Runtime.getRuntime().exec(args.toArray(ARGS_ARRAY_TYPE));
 			if (debug) log("Executing kill process for pid " + pid);
 			int exitVal = proc.waitFor();
-			if (exitVal != 0) log("Error killing process " + pid);
+			if (exitVal != 0) log("Error killing process " + pid + ". Exit with val " + exitVal);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
