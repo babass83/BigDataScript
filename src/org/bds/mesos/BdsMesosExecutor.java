@@ -19,6 +19,7 @@ package org.bds.mesos;
  */
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.mesos.Executor;
 import org.apache.mesos.ExecutorDriver;
@@ -67,8 +68,8 @@ public class BdsMesosExecutor implements Executor, NotifyTaskState, PidParser {
 		}
 	}
 
-	public static boolean debug = false;
-	HashMap<String, CmdInfo> cmdInfoById;
+	public static boolean debug = true;
+	ConcurrentHashMap<String, CmdInfo> cmdInfoById;
 
 	// Script used to fire up BDS executor
 	// This is script invoked by Mesos when a task is executed
@@ -86,7 +87,7 @@ public class BdsMesosExecutor implements Executor, NotifyTaskState, PidParser {
 	}
 
 	public BdsMesosExecutor() {
-		cmdInfoById = new HashMap<String, BdsMesosExecutor.CmdInfo>();
+		cmdInfoById = new ConcurrentHashMap<String, BdsMesosExecutor.CmdInfo>();
 	}
 
 	/**
@@ -138,7 +139,7 @@ public class BdsMesosExecutor implements Executor, NotifyTaskState, PidParser {
 			ci.cmd.kill();
 
 		// Clean up
-		cmdInfoById = new HashMap<String, BdsMesosExecutor.CmdInfo>();
+		cmdInfoById = new ConcurrentHashMap<String, BdsMesosExecutor.CmdInfo>();
 	}
 
 	/**
@@ -185,6 +186,7 @@ public class BdsMesosExecutor implements Executor, NotifyTaskState, PidParser {
 			cmd.setTask(task);
 			cmd.setNotifyTaskState(this);
 			cmd.setPidParser(this);
+			cmd.setReadPid(true);
 			cmd.setDebug(debug);
 
 			// Store information
