@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.mesos.Protos.ExecutorID;
 import org.apache.mesos.Protos.ExecutorInfo;
@@ -73,14 +74,15 @@ public class BdsMesosScheduler implements Scheduler {
 	protected ExecutionerMesos executionerMesos;
 	protected Map<String, Set<Offer>> offersByHost;
 	protected Map<String, Offer> offersById;
-	protected Set<Task> taskToLaunch;
+	protected ConcurrentHashMap<String, Task> taskToLaunch;
 
 	public BdsMesosScheduler(ExecutionerMesos executionerMesos, ExecutorInfo executor) {
 		this.executionerMesos = executionerMesos;
 		this.executor = executor;
 		cluster = executionerMesos.getCluster();
 		taskById = new HashMap<String, Task>();
-		taskToLaunch = Collections.synchronizedSet(new HashSet<Task>());
+		//taskToLaunch = Collections.synchronizedSet(new HashSet<Task>());
+		taskToLaunch = new ConcurrentHashMap<String, Task>();
 		offersByHost = new HashMap<>();
 		offersById = new HashMap<>();
 	}
@@ -122,7 +124,7 @@ public class BdsMesosScheduler implements Scheduler {
 	 * Add a task to be launched
 	 */
 	public void add(Task task) {
-		taskToLaunch.add(task);
+		taskToLaunch.put(task.getId(), task);
 	}
 
 	/**
@@ -392,7 +394,7 @@ public class BdsMesosScheduler implements Scheduler {
 				// Skip master node
 			} else {
 				// Try to match as many tasks as possible in this host
-				for (Task task : taskToLaunch) {
+				for (Task task : taskToLaunch.values()) {
 					//if (verbose) Gpr.debug("Trying to launch task " + task.getId());
 					if (matchTask(task, host, offerIds, taskInfos)) {
 						host.add(task); // Account used resources
@@ -414,7 +416,9 @@ public class BdsMesosScheduler implements Scheduler {
 					driver.launchTasks(offerIds, taskInfos);
 
 					// Remove assigned tasks
-					taskToLaunch.removeAll(assignedTasks);
+					for (Task assignedTask : assignedTasks) {
+						taskToLaunch.remove(assignedTask.getId());
+					}
 					offerIdsUsed.addAll(offerIds);
 
 					// Initialize for next round
