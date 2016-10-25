@@ -2,11 +2,10 @@ package org.bds.cluster;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bds.cluster.host.Host;
 import org.bds.cluster.host.HostResources;
@@ -22,10 +21,10 @@ public class Cluster implements Iterable<Host> {
 	public static final Cluster FAKE_CLUSTER = new Cluster();
 
 	protected boolean doNotRunOnRed = true; // If a host has a 'red' condition => do not run any tasks on them
-	protected Map<String, Host> hosts; // All hosts indexed by name
+	protected ConcurrentHashMap<String, Host> hosts; // All hosts indexed by name
 
 	public Cluster() {
-		hosts = new HashMap<String, Host>();
+		hosts = new ConcurrentHashMap<String, Host>();
 	}
 
 	/**
